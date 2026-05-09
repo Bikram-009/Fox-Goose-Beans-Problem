@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fox · Goose · Beans — PURBA AI Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Sora:wght@200;300;400;600&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="fgb.css">
+</head>
+<body>
+
+  <!-- CURSOR -->
+  <div id="cur-dot"></div>
+  <div id="cur-ring"></div>
+
+  <!-- BACKGROUND -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="grid-overlay"></div>
+
+  <!-- ══════════════════════════════
+       NAV
+  ══════════════════════════════ -->
+  <nav>
+    <div class="nav-logo">FGB ✦ PURBA AI</div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#algorithms">Algorithms</a>
+      <a href="#code-section">Code</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#insights">Insights</a>
+      <a href="#learning">Learn</a>
+    </div>
+    <div class="nav-pill">● PURBA ONLINE</div>
+  </nav>
+
+  <!-- ══════════════════════════════
+       HERO
+  ══════════════════════════════ -->
+  <section id="hero">
+    <div class="float-icons">
+      <span class="fi">🦊</span>
+      <span class="fi">🪿</span>
+      <span class="fi">🌱</span>
+      <span class="fi">🚣</span>
+      <span class="fi">🧠</span>
+      <span class="fi">⚡</span>
+    </div>
+
+    <p class="hero-tag">// intelligent state-space search · bfs · dfs · a* · constraint satisfaction</p>
+
+    <h1 class="hero-h1">
+      <span class="w1">Fox</span>&thinsp;·&thinsp;<span class="w2">Goose</span><br>
+      &amp;&thinsp;Beans
+    </h1>
+
+    <p class="hero-sub">AI-Powered State Space Search Visualization</p>
+
+    <p class="hero-desc">
+      Explore how intelligent algorithms solve the classic river crossing puzzle using
+      <b>Breadth-First Search</b>, <b>Depth-First Search</b>, and <b>A* heuristic strategies</b>.
+      Visualize state transitions, trace optimal paths, and study real Java implementations —
+      guided by PURBA, your on-board AI assistant.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn-neon" onclick="document.getElementById('simulation').scrollIntoView({behavior:'smooth'})">
+        ⚡ Launch Simulation
+      </button>
+      <button class="btn-ghost" onclick="document.getElementById('code-section').scrollIntoView({behavior:'smooth'})">
+        &lt;/&gt; View Code
+      </button>
+    </div>
+
+    <div class="scroll-hint">
+      <span>scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       01 — PROBLEM OVERVIEW
+  ══════════════════════════════ -->
+  <section id="overview">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">01 — Problem Overview</p>
+        <h2 class="sec-title">The River Crossing <span class="neon-c">Constraint Problem</span></h2>
+        <p class="sec-sub">
+          A farmer must transport three entities across a river in a small boat.
+          Only one can travel with the farmer at a time. Certain combinations
+          left unattended cause irreversible conflict.
+        </p>
+      </div>
+
+      <div class="rules-grid reveal">
+
+        <div class="rule-card danger">
+          <span class="rule-icon">🦊🪿</span>
+          <div class="rule-title">Fox Eats Goose</div>
+          <div class="rule-desc">
+            If the fox and goose are left alone on the same bank without the
+            farmer's supervision, the fox will eat the goose.
+          </div>
+          <div class="r-badge d">⚠ INVALID STATE</div>
+        </div>
+
+        <div class="rule-card danger">
+          <span class="rule-icon">🪿🌱</span>
+          <div class="rule-title">Goose Eats Beans</div>
+          <div class="rule-desc">
+            If the goose and beans are left unsupervised on the same bank,
+            the goose will consume the beans — another forbidden configuration.
+          </div>
+          <div class="r-badge d">⚠ INVALID STATE</div>
+        </div>
+
+        <div class="rule-card safe">
+          <span class="rule-icon">🦊🌱</span>
+          <div class="rule-title">Fox + Beans = Safe</div>
+          <div class="rule-desc">
+            The fox has zero interest in beans. These two can coexist on any bank
+            without supervision. This is the critical insight that unlocks the solution!
+          </div>
+          <div class="r-badge s">✓ VALID STATE</div>
+        </div>
+
+        <div class="rule-card info">
+          <span class="rule-icon">🚣</span>
+          <div class="rule-title">One Passenger Per Trip</div>
+          <div class="rule-desc">
+            The farmer can carry at most one item per crossing, or travel alone.
+            Careful trip ordering is essential to reach [All Right] in minimum steps.
+          </div>
+          <div class="r-badge i">≡ CONSTRAINT</div>
+        </div>
+
+      </div>
+
+      <!-- State chain -->
+      <div class="state-chain-wrap reveal">
+        <h3>// OPTIMAL SOLUTION PATH — 7 State Transitions (click to explore)</h3>
+        <div class="state-chain" id="state-chain"></div>
+        <p style="margin-top:14px;font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text-dim);text-align:center">
+          FORMAT: [🚣|🦊|🪿|🌱] — L = Left Bank &nbsp;·&nbsp; R = Right Bank
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       02 — ALGORITHM VISUALIZATION
+  ══════════════════════════════ -->
+  <section id="algorithms">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">02 — Algorithm Intelligence</p>
+        <h2 class="sec-title">Search Strategy <span class="neon-p">Comparison</span></h2>
+        <p class="sec-sub">
+          Different algorithms traverse the same state space in fundamentally different ways.
+          Toggle between BFS, DFS, and A* to see how each strategy explores, prunes, and converges.
+        </p>
+      </div>
+
+      <div class="algo-tabs reveal">
+        <button class="a-tab ac-bfs"  onclick="switchAlgo('bfs',  this)">BFS — Breadth First</button>
+        <button class="a-tab"         onclick="switchAlgo('dfs',  this)">DFS — Depth First</button>
+        <button class="a-tab"         onclick="switchAlgo('astar',this)">A* — Heuristic</button>
+      </div>
+
+      <div class="algo-grid reveal">
+        <div class="algo-canvas-wrap">
+          <canvas id="algo-canvas" width="460" height="380"></canvas>
+        </div>
+        <div class="algo-stats">
+          <div class="a-stat">
+            <div class="a-stat-ico c">🔍</div>
+            <div>
+              <div class="a-label">STATES EXPLORED</div>
+              <div class="a-val" id="stat-states">11</div>
+            </div>
+          </div>
+          <div class="a-stat">
+            <div class="a-stat-ico p">📏</div>
+            <div>
+              <div class="a-label">PATH LENGTH</div>
+              <div class="a-val" id="stat-path">7 steps</div>
+            </div>
+          </div>
+          <div class="a-stat">
+            <div class="a-stat-ico g">⏱</div>
+            <div>
+              <div class="a-label">TIME COMPLEXITY</div>
+              <div class="a-val" id="stat-cmplx">O(b^d)</div>
+            </div>
+          </div>
+          <div class="g-card">
+            <div class="sec-tag" style="font-size:.63rem;margin-bottom:10px">ALGORITHM BEHAVIOR</div>
+            <p id="algo-desc-text" style="font-size:.86rem;color:var(--text-dim);line-height:1.85;font-weight:300">
+              BFS uses a FIFO queue to explore states level-by-level, guaranteeing the shortest path.
+              Complete &amp; optimal — explores 11 states, finds the 7-step solution.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       03 — CODE & ALGORITHM
+  ══════════════════════════════ -->
+  <section id="code-section">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">03 — Code &amp; Algorithm</p>
+        <h2 class="sec-title">From Concept to <span class="neon-c">Implementation</span></h2>
+        <p class="sec-sub">
+          Study the pseudocode to understand the logic, then examine the working Java implementation.
+          Both BFS and DFS are fully functional — copy and run them directly.
+        </p>
+      </div>
+
+      <!-- Main code tabs: Pseudocode / Java -->
+      <div class="code-toggle reveal">
+        <button class="code-tab-btn active" onclick="switchCodeTab('pseudo',this)">📋 Pseudocode</button>
+        <button class="code-tab-btn"        onclick="switchCodeTab('java',  this)">&lt;/&gt; Java</button>
+      </div>
+
+      <!-- ─ PSEUDOCODE AREA ─ -->
+      <div class="code-area visible reveal" id="code-pseudo">
+        <div class="pseudo-grid">
+
+          <!-- BFS Pseudocode -->
+          <div class="pseudo-card">
+            <div class="pseudo-hdr">
+              <span class="pseudo-hdr-title bfs">◈ BFS Pseudocode</span>
+              <span style="font-family:'Fira Code',monospace;font-size:.63rem;color:var(--text-dim)">Breadth-First Search</span>
+            </div>
+            <div class="pseudo-body">
+              <span class="pseudo-line"><span class="pseudo-cm">// BFS: Optimal and Complete</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line"><span class="pseudo-kw">FUNCTION</span> <span class="pseudo-fn">BFS</span>(startState, goalState):</span>
+              <span class="pseudo-line indent1"><span class="pseudo-hi">queue</span>   ← <span class="pseudo-kw">new</span> Queue()   <span class="pseudo-cm">// FIFO data structure</span></span>
+              <span class="pseudo-line indent1"><span class="pseudo-hi">visited</span> ← <span class="pseudo-kw">new</span> Set()    <span class="pseudo-cm">// Tracks explored states</span></span>
+              <span class="pseudo-line indent1"><span class="pseudo-hi">parent</span>  ← <span class="pseudo-kw">new</span> Map()    <span class="pseudo-cm">// Reconstructs final path</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1">queue.<span class="pseudo-fn">enqueue</span>(startState)</span>
+              <span class="pseudo-line indent1">visited.<span class="pseudo-fn">add</span>(startState)</span>
+              <span class="pseudo-line indent1">parent[startState] ← <span class="pseudo-kw">null</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">WHILE</span> queue <span class="pseudo-kw">NOT EMPTY</span>:</span>
+              <span class="pseudo-line indent2">current ← queue.<span class="pseudo-fn">dequeue</span>()</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">IF</span> current == goalState:</span>
+              <span class="pseudo-line indent3"><span class="pseudo-kw">RETURN</span> <span class="pseudo-fn">buildPath</span>(parent, current)</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">FOR EACH</span> next <span class="pseudo-kw">IN</span> <span class="pseudo-fn">getNextStates</span>(current):</span>
+              <span class="pseudo-line indent3"><span class="pseudo-kw">IF</span> next <span class="pseudo-kw">NOT IN</span> visited <span class="pseudo-kw">AND</span> <span class="pseudo-fn">isValid</span>(next):</span>
+              <span class="pseudo-line indent3">&nbsp;&nbsp;&nbsp;&nbsp;visited.<span class="pseudo-fn">add</span>(next)</span>
+              <span class="pseudo-line indent3">&nbsp;&nbsp;&nbsp;&nbsp;parent[next] ← current</span>
+              <span class="pseudo-line indent3">&nbsp;&nbsp;&nbsp;&nbsp;queue.<span class="pseudo-fn">enqueue</span>(next)</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">null</span>  <span class="pseudo-cm">// No path found</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line"><span class="pseudo-cm">// Complexity: Time O(b^d), Space O(b^d)</span></span>
+              <span class="pseudo-line"><span class="pseudo-cm">// Guarantees OPTIMAL (shortest) solution ✓</span></span>
+            </div>
+          </div>
+
+          <!-- DFS Pseudocode -->
+          <div class="pseudo-card">
+            <div class="pseudo-hdr">
+              <span class="pseudo-hdr-title dfs">◈ DFS Pseudocode</span>
+              <span style="font-family:'Fira Code',monospace;font-size:.63rem;color:var(--text-dim)">Depth-First Search</span>
+            </div>
+            <div class="pseudo-body">
+              <span class="pseudo-line"><span class="pseudo-cm">// DFS: Memory-efficient, Not Optimal</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line"><span class="pseudo-kw">FUNCTION</span> <span class="pseudo-fn">DFS</span>(state, goal, visited, path):</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">IF</span> state == goal:</span>
+              <span class="pseudo-line indent2">path.<span class="pseudo-fn">add</span>(state)</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">true</span>   <span class="pseudo-cm">// Goal reached</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">IF</span> state <span class="pseudo-kw">IN</span> visited:</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">false</span>  <span class="pseudo-cm">// Cycle detected, backtrack</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1">visited.<span class="pseudo-fn">add</span>(state)</span>
+              <span class="pseudo-line indent1">path.<span class="pseudo-fn">add</span>(state)</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">FOR EACH</span> next <span class="pseudo-kw">IN</span> <span class="pseudo-fn">getNextStates</span>(state):</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">IF</span> <span class="pseudo-fn">isValid</span>(next):</span>
+              <span class="pseudo-line indent3"><span class="pseudo-kw">IF</span> <span class="pseudo-fn">DFS</span>(next, goal, visited, path):</span>
+              <span class="pseudo-line indent3">&nbsp;&nbsp;&nbsp;&nbsp;<span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">true</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-cm">// No valid path found — backtrack</span></span>
+              <span class="pseudo-line indent1">path.<span class="pseudo-fn">removeLast</span>()</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">false</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line"><span class="pseudo-cm">// Complexity: Time O(b^m), Space O(b·m)</span></span>
+              <span class="pseudo-line"><span class="pseudo-cm">// NOT guaranteed optimal ✗ (may miss shorter paths)</span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- isValid + getNextStates pseudocode -->
+        <div class="pseudo-card" style="margin-top:22px">
+          <div class="pseudo-hdr">
+            <span class="pseudo-hdr-title" style="color:var(--gold)">◈ Shared Helper Functions: isValid() &amp; getNextStates()</span>
+          </div>
+          <div class="pseudo-body" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+            <div>
+              <span class="pseudo-line"><span class="pseudo-cm">// Check if a state breaks any puzzle rule</span></span>
+              <span class="pseudo-line"><span class="pseudo-kw">FUNCTION</span> <span class="pseudo-fn">isValid</span>(state):</span>
+              <span class="pseudo-line indent1"><span class="pseudo-hi">farmer</span>, <span class="pseudo-hi">fox</span>, <span class="pseudo-hi">goose</span>, <span class="pseudo-hi">beans</span> ← state</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-cm">// Fox eats Goose when unsupervised</span></span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">IF</span> fox == goose <span class="pseudo-kw">AND</span> fox ≠ farmer:</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">false</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-cm">// Goose eats Beans when unsupervised</span></span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">IF</span> goose == beans <span class="pseudo-kw">AND</span> goose ≠ farmer:</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">false</span></span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">RETURN</span> <span class="pseudo-kw">true</span>  <span class="pseudo-cm">// State is safe</span></span>
+            </div>
+            <div>
+              <span class="pseudo-line"><span class="pseudo-cm">// Generate all possible next states</span></span>
+              <span class="pseudo-line"><span class="pseudo-kw">FUNCTION</span> <span class="pseudo-fn">getNextStates</span>(state):</span>
+              <span class="pseudo-line indent1"><span class="pseudo-hi">nextStates</span> ← []</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-cm">// Option 1: Farmer crosses alone</span></span>
+              <span class="pseudo-line indent1">nextStates.<span class="pseudo-fn">add</span>(flip(state, FARMER))</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-cm">// Options 2–4: Farmer takes one entity</span></span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">FOR EACH</span> entity <span class="pseudo-kw">IN</span> [FOX, GOOSE, BEANS]:</span>
+              <span class="pseudo-line indent2"><span class="pseudo-kw">IF</span> entity.side == farmer.side:</span>
+              <span class="pseudo-line indent3">nextStates.<span class="pseudo-fn">add</span>(</span>
+              <span class="pseudo-line indent3">&nbsp;&nbsp;flip(state, FARMER, entity))</span>
+              <span class="pseudo-line">&nbsp;</span>
+              <span class="pseudo-line indent1"><span class="pseudo-kw">RETURN</span> nextStates</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /code-pseudo -->
+
+      <!-- ─ JAVA CODE AREA ─ -->
+      <div class="code-area reveal" id="code-java">
+
+        <div class="code-sub-tabs">
+          <button class="csub-btn active" onclick="document.querySelectorAll('[data-algo]').forEach(e=>e.style.display='none');document.querySelectorAll('[data-algo=bfs]').forEach(e=>e.style.display='block');document.querySelectorAll('.csub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">BFS — Java</button>
+          <button class="csub-btn" onclick="document.querySelectorAll('[data-algo]').forEach(e=>e.style.display='none');document.querySelectorAll('[data-algo=dfs]').forEach(e=>e.style.display='block');document.querySelectorAll('.csub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">DFS — Java</button>
+        </div>
+
+        <!-- BFS Java — Shortened -->
+        <div class="editor-wrap" data-algo="bfs">
+          <div class="editor-header">
+            <div class="editor-dots"><span></span><span></span><span></span></div>
+            <span class="editor-title">FoxGooseBeansBFS.java</span>
+            <button class="copy-btn" onclick="copyCode(this,'bfs-code')">Copy</button>
+          </div>
+          <div class="code-body">
+            <div class="line-nums" id="bfs-line-nums"></div>
+            <pre class="code-pre" id="bfs-code"><span class="kw">import</span> <span class="str">java.util.*</span><span class="pun">;</span>
+
+<span class="cm">/**
+ * BFS Solver for Fox, Goose and Beans puzzle.
+ * State = 4-bit int: bit3=Farmer, bit2=Fox, bit1=Goose, bit0=Beans
+ * 0 = Left bank, 1 = Right bank
+ */</span>
+<span class="kw">public class</span> <span class="cls">FoxGooseBeansBFS</span> <span class="pun">{</span>
+
+    <span class="kw">static final int</span> <span class="var">START</span> <span class="op">=</span> <span class="num">0b0000</span><span class="pun">,</span> <span class="var">GOAL</span> <span class="op">=</span> <span class="num">0b1111</span><span class="pun">;</span>
+
+    <span class="cm">// Returns false if the state is unsafe (unattended predator-prey pair)</span>
+    <span class="kw">static boolean</span> <span class="fn">isValid</span><span class="pun">(</span><span class="kw">int</span> <span class="var">s</span><span class="pun">) {</span>
+        <span class="kw">int</span> <span class="var">f</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">3</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">x</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">2</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">g</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">1</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">b</span><span class="op">=</span><span class="var">s</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">;</span>
+        <span class="kw">return</span> <span class="op">!</span><span class="pun">(</span><span class="var">x</span><span class="op">==</span><span class="var">g</span> <span class="op">&amp;&amp;</span> <span class="var">x</span><span class="op">!=</span><span class="var">f</span><span class="pun">)</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="pun">(</span><span class="var">g</span><span class="op">==</span><span class="var">b</span> <span class="op">&amp;&amp;</span> <span class="var">g</span><span class="op">!=</span><span class="var">f</span><span class="pun">);</span>
+    <span class="pun">}</span>
+
+    <span class="cm">// All 4 possible moves: farmer alone, or with fox/goose/beans</span>
+    <span class="kw">static</span> <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="fn">nextStates</span><span class="pun">(</span><span class="kw">int</span> <span class="var">cur</span><span class="pun">) {</span>
+        <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">res</span> <span class="op">=</span> <span class="kw">new</span> <span class="cls">ArrayList</span><span class="pun">&lt;&gt;();</span>
+        <span class="kw">for</span> <span class="pun">(</span><span class="kw">int</span> <span class="var">m</span> <span class="pun">:</span> <span class="kw">new</span> <span class="kw">int</span><span class="pun">[]{</span><span class="num">8</span><span class="pun">,</span><span class="num">12</span><span class="pun">,</span><span class="num">10</span><span class="pun">,</span><span class="num">9</span><span class="pun">})</span>  <span class="cm">// XOR masks for each move</span>
+            <span class="kw">if</span> <span class="pun">(</span><span class="fn">isValid</span><span class="pun">(</span><span class="var">cur</span> <span class="op">^</span> <span class="var">m</span><span class="pun">))</span> <span class="var">res</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">cur</span> <span class="op">^</span> <span class="var">m</span><span class="pun">);</span>
+        <span class="kw">return</span> <span class="var">res</span><span class="pun">;</span>
+    <span class="pun">}</span>
+
+    <span class="cm">// BFS: explores states level-by-level, guarantees shortest path</span>
+    <span class="kw">public static</span> <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="fn">solve</span><span class="pun">() {</span>
+        <span class="str">Queue</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">q</span> <span class="op">=</span> <span class="kw">new</span> <span class="cls">LinkedList</span><span class="pun">&lt;&gt;();</span>
+        <span class="str">Map</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">,</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">par</span> <span class="op">=</span> <span class="kw">new</span> <span class="cls">HashMap</span><span class="pun">&lt;&gt;();</span>
+        <span class="var">q</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">START</span><span class="pun">);</span> <span class="var">par</span><span class="pun">.</span><span class="fn">put</span><span class="pun">(</span><span class="var">START</span><span class="pun">, -</span><span class="num">1</span><span class="pun">);</span>
+
+        <span class="kw">while</span> <span class="pun">(!</span><span class="var">q</span><span class="pun">.</span><span class="fn">isEmpty</span><span class="pun">()) {</span>
+            <span class="kw">int</span> <span class="var">cur</span> <span class="op">=</span> <span class="var">q</span><span class="pun">.</span><span class="fn">poll</span><span class="pun">();</span>
+            <span class="kw">if</span> <span class="pun">(</span><span class="var">cur</span> <span class="op">==</span> <span class="var">GOAL</span><span class="pun">)</span> <span class="kw">return</span> <span class="fn">buildPath</span><span class="pun">(</span><span class="var">par</span><span class="pun">,</span> <span class="var">cur</span><span class="pun">);</span>
+            <span class="kw">for</span> <span class="pun">(</span><span class="kw">int</span> <span class="var">next</span> <span class="pun">:</span> <span class="fn">nextStates</span><span class="pun">(</span><span class="var">cur</span><span class="pun">))</span>
+                <span class="kw">if</span> <span class="pun">(!</span><span class="var">par</span><span class="pun">.</span><span class="fn">containsKey</span><span class="pun">(</span><span class="var">next</span><span class="pun">)) {</span>
+                    <span class="var">par</span><span class="pun">.</span><span class="fn">put</span><span class="pun">(</span><span class="var">next</span><span class="pun">,</span> <span class="var">cur</span><span class="pun">);</span>
+                    <span class="var">q</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">next</span><span class="pun">);</span>
+                <span class="pun">}</span>
+        <span class="pun">}</span>
+        <span class="kw">return</span> <span class="cls">Collections</span><span class="pun">.</span><span class="fn">emptyList</span><span class="pun">();</span>
+    <span class="pun">}</span>
+
+    <span class="cm">// Walks the parent map backwards to reconstruct the solution path</span>
+    <span class="kw">static</span> <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="fn">buildPath</span><span class="pun">(</span><span class="str">Map</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">,</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">par</span><span class="pun">,</span> <span class="kw">int</span> <span class="var">goal</span><span class="pun">) {</span>
+        <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">path</span> <span class="op">=</span> <span class="kw">new</span> <span class="cls">ArrayList</span><span class="pun">&lt;&gt;();</span>
+        <span class="kw">for</span> <span class="pun">(</span><span class="kw">int</span> <span class="var">s</span> <span class="op">=</span> <span class="var">goal</span><span class="pun">;</span> <span class="var">s</span> <span class="op">!=</span> <span class="op">-</span><span class="num">1</span><span class="pun">;</span> <span class="var">s</span> <span class="op">=</span> <span class="var">par</span><span class="pun">.</span><span class="fn">get</span><span class="pun">(</span><span class="var">s</span><span class="pun">))</span>
+            <span class="var">path</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="num">0</span><span class="pun">,</span> <span class="var">s</span><span class="pun">);</span>
+        <span class="kw">return</span> <span class="var">path</span><span class="pun">;</span>
+    <span class="pun">}</span>
+
+    <span class="kw">public static void</span> <span class="fn">main</span><span class="pun">(</span><span class="str">String</span><span class="pun">[]</span> <span class="var">args</span><span class="pun">) {</span>
+        <span class="fn">solve</span><span class="pun">().</span><span class="fn">forEach</span><span class="pun">(</span><span class="var">s</span> <span class="op">-&gt;</span>
+            <span class="cls">System</span><span class="pun">.</span><span class="var">out</span><span class="pun">.</span><span class="fn">printf</span><span class="pun">(</span><span class="str">"[F=%d X=%d G=%d B=%d]%n"</span><span class="pun">,</span>
+                <span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">3</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">, (</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">2</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">, (</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">1</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">s</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">));</span>
+    <span class="pun">}</span>
+<span class="pun">}</span></pre>
+          </div>
+        </div><!-- /BFS editor -->
+
+        <!-- DFS Java — Shortened -->
+        <div class="editor-wrap" data-algo="dfs" style="display:none;margin-top:0">
+          <div class="editor-header">
+            <div class="editor-dots"><span></span><span></span><span></span></div>
+            <span class="editor-title">FoxGooseBeansDFS.java</span>
+            <button class="copy-btn" onclick="copyCode(this,'dfs-code')">Copy</button>
+          </div>
+          <div class="code-body">
+            <div class="line-nums" id="dfs-line-nums"></div>
+            <pre class="code-pre" id="dfs-code"><span class="kw">import</span> <span class="str">java.util.*</span><span class="pun">;</span>
+
+<span class="cm">/**
+ * DFS Solver for Fox, Goose and Beans puzzle.
+ * Uses same 4-bit state encoding as BFS version.
+ * DFS is NOT guaranteed to find the shortest path.
+ */</span>
+<span class="kw">public class</span> <span class="cls">FoxGooseBeansDFS</span> <span class="pun">{</span>
+
+    <span class="kw">static final int</span> <span class="var">START</span> <span class="op">=</span> <span class="num">0b0000</span><span class="pun">,</span> <span class="var">GOAL</span> <span class="op">=</span> <span class="num">0b1111</span><span class="pun">;</span>
+
+    <span class="cm">// Reuse isValid and nextStates from BFS (same puzzle, same rules)</span>
+    <span class="kw">static boolean</span> <span class="fn">isValid</span><span class="pun">(</span><span class="kw">int</span> <span class="var">s</span><span class="pun">) {</span>
+        <span class="kw">int</span> <span class="var">f</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">3</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">x</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">2</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">g</span><span class="op">=</span><span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">1</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">b</span><span class="op">=</span><span class="var">s</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">;</span>
+        <span class="kw">return</span> <span class="op">!</span><span class="pun">(</span><span class="var">x</span><span class="op">==</span><span class="var">g</span> <span class="op">&amp;&amp;</span> <span class="var">x</span><span class="op">!=</span><span class="var">f</span><span class="pun">)</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="pun">(</span><span class="var">g</span><span class="op">==</span><span class="var">b</span> <span class="op">&amp;&amp;</span> <span class="var">g</span><span class="op">!=</span><span class="var">f</span><span class="pun">);</span>
+    <span class="pun">}</span>
+
+    <span class="cm">// Recursive DFS: dives deep before backtracking</span>
+    <span class="kw">static boolean</span> <span class="fn">dfs</span><span class="pun">(</span><span class="kw">int</span> <span class="var">state</span><span class="pun">,</span> <span class="str">Set</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">visited</span><span class="pun">,</span> <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">path</span><span class="pun">) {</span>
+        <span class="kw">if</span> <span class="pun">(</span><span class="var">state</span> <span class="op">==</span> <span class="var">GOAL</span><span class="pun">)</span>          <span class="pun">{</span> <span class="var">path</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">state</span><span class="pun">);</span> <span class="kw">return true</span><span class="pun">;  }</span>  <span class="cm">// Goal reached</span>
+        <span class="kw">if</span> <span class="pun">(</span><span class="var">visited</span><span class="pun">.</span><span class="fn">contains</span><span class="pun">(</span><span class="var">state</span><span class="pun">))</span> <span class="kw">return false</span><span class="pun">;</span>              <span class="cm">// Cycle — backtrack</span>
+
+        <span class="var">visited</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">state</span><span class="pun">);</span>
+        <span class="var">path</span><span class="pun">.</span><span class="fn">add</span><span class="pun">(</span><span class="var">state</span><span class="pun">);</span>
+
+        <span class="kw">for</span> <span class="pun">(</span><span class="kw">int</span> <span class="var">m</span> <span class="pun">:</span> <span class="kw">new</span> <span class="kw">int</span><span class="pun">[]{</span><span class="num">8</span><span class="pun">,</span><span class="num">12</span><span class="pun">,</span><span class="num">10</span><span class="pun">,</span><span class="num">9</span><span class="pun">}) {</span>  <span class="cm">// Try all 4 moves</span>
+            <span class="kw">int</span> <span class="var">next</span> <span class="op">=</span> <span class="var">state</span> <span class="op">^</span> <span class="var">m</span><span class="pun">;</span>
+            <span class="kw">if</span> <span class="pun">(</span><span class="fn">isValid</span><span class="pun">(</span><span class="var">next</span><span class="pun">)</span> <span class="op">&amp;&amp;</span> <span class="fn">dfs</span><span class="pun">(</span><span class="var">next</span><span class="pun">,</span> <span class="var">visited</span><span class="pun">,</span> <span class="var">path</span><span class="pun">))</span> <span class="kw">return true</span><span class="pun">;</span>
+        <span class="pun">}</span>
+
+        <span class="var">path</span><span class="pun">.</span><span class="fn">remove</span><span class="pun">(</span><span class="var">path</span><span class="pun">.</span><span class="fn">size</span><span class="pun">() -</span> <span class="num">1</span><span class="pun">);</span>  <span class="cm">// Backtrack: undo this step</span>
+        <span class="kw">return false</span><span class="pun">;</span>
+    <span class="pun">}</span>
+
+    <span class="kw">public static void</span> <span class="fn">main</span><span class="pun">(</span><span class="str">String</span><span class="pun">[]</span> <span class="var">args</span><span class="pun">) {</span>
+        <span class="str">List</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span> <span class="var">path</span>    <span class="op">=</span> <span class="kw">new</span> <span class="cls">ArrayList</span><span class="pun">&lt;&gt;();</span>
+        <span class="str">Set</span><span class="pun">&lt;</span><span class="str">Integer</span><span class="pun">&gt;</span>  <span class="var">visited</span> <span class="op">=</span> <span class="kw">new</span> <span class="cls">HashSet</span><span class="pun">&lt;&gt;();</span>
+        <span class="fn">dfs</span><span class="pun">(</span><span class="var">START</span><span class="pun">,</span> <span class="var">visited</span><span class="pun">,</span> <span class="var">path</span><span class="pun">);</span>
+        <span class="var">path</span><span class="pun">.</span><span class="fn">forEach</span><span class="pun">(</span><span class="var">s</span> <span class="op">-&gt;</span>
+            <span class="cls">System</span><span class="pun">.</span><span class="var">out</span><span class="pun">.</span><span class="fn">printf</span><span class="pun">(</span><span class="str">"[F=%d X=%d G=%d B=%d]%n"</span><span class="pun">,</span>
+                <span class="pun">(</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">3</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">, (</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">2</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">, (</span><span class="var">s</span><span class="op">&gt;&gt;</span><span class="num">1</span><span class="pun">)</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">,</span> <span class="var">s</span><span class="op">&amp;</span><span class="num">1</span><span class="pun">));</span>
+    <span class="pun">}</span>
+<span class="pun">}</span></pre>
+          </div>
+        </div><!-- /DFS editor -->
+
+      </div><!-- /code-java -->
+
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       04 — INTERACTIVE SIMULATION
+  ══════════════════════════════ -->
+  <section id="simulation">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">04 — Interactive Simulation</p>
+        <h2 class="sec-title">Live <span class="neon-c">River Crossing</span> Engine</h2>
+        <p class="sec-sub">
+          Pilot the boat yourself or watch the AI solve it. Every state is validated in real time.
+          Ask PURBA for a hint if you get stuck!
+        </p>
+      </div>
+
+      <div class="sim-wrap reveal">
+        <div class="sim-hdr">
+          <span class="sim-hdr-title">🚤 Real-Time State Validator — BFS Engine</span>
+          <div class="sim-modes">
+            <button class="sim-mode-btn on" onclick="setSimMode('manual',this)">Manual</button>
+            <button class="sim-mode-btn"    onclick="setSimMode('auto',  this)">AI Solve</button>
+          </div>
+        </div>
+
+        <div class="sim-body-pad">
+
+          <!-- River Scene -->
+          <div class="river-scene">
+            <div class="bank L">
+              <div class="bank-lbl">← Left Bank</div>
+              <div class="bank-ents" id="left-ents"></div>
+            </div>
+            <div class="river-mid">
+              <div class="river-mid-bg"></div>
+              <div class="rwave"></div>
+              <div class="rwave"></div>
+              <div class="rwave"></div>
+            </div>
+            <div class="boat-zone">
+              <div class="boat-occ" id="boat-occ"></div>
+              <div class="boat-ico gl" id="boat-ico">🚤</div>
+              <div class="boat-lbl" id="boat-lbl">AT LEFT BANK</div>
+            </div>
+            <div class="bank R">
+              <div class="bank-lbl">Right Bank →</div>
+              <div class="bank-ents" id="right-ents"></div>
+            </div>
+          </div>
+
+          <div class="st-bar info" id="sim-status">
+            🤖 Select an action below. Ask PURBA for hints anytime!
+          </div>
+
+          <div style="margin-bottom:9px;font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text-dim)">
+            AVAILABLE MOVES:
+          </div>
+          <div class="act-btns" id="act-btns"></div>
+
+          <div class="sim-ctrl">
+            <button class="c-btn pri" onclick="aiSimStep()">▶ AI Next Step</button>
+            <button class="c-btn"     onclick="undoSimMove()">↩ Undo</button>
+            <button class="c-btn rst" onclick="resetSim()">↺ Reset</button>
+            <button class="c-btn" onclick="if(!purbaOpen)togglePurba();sendHintChip('Give me a hint for the puzzle')">
+              💬 Ask PURBA
+            </button>
+            <div style="margin-left:auto;font-family:'Fira Code',monospace;font-size:.72rem;color:var(--text-dim)">
+              MOVES: <span id="sim-move-cnt" style="color:var(--cyan)">0</span> / 7
+            </div>
+          </div>
+
+          <div class="move-log" id="sim-log">
+            <div style="color:var(--text-dim)">// Move history will appear here...</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       05 — AI INSIGHTS
+  ══════════════════════════════ -->
+  <section id="insights">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">05 — AI Insight Panel</p>
+        <h2 class="sec-title">Performance <span class="neon-g">Analytics</span></h2>
+        <p class="sec-sub">
+          Compare algorithm efficiency across the complete state space.
+          See why A* outperforms both BFS and DFS in terms of states explored.
+        </p>
+      </div>
+
+      <div class="ins-grid reveal">
+        <div class="ins-card c1">
+          <div class="ins-ico">🗂️</div>
+          <div class="ins-num" id="cnt-states">0</div>
+          <div class="ins-lbl">Total State Space (2⁴)</div>
+        </div>
+        <div class="ins-card c2">
+          <div class="ins-ico">✅</div>
+          <div class="ins-num" id="cnt-valid">0</div>
+          <div class="ins-lbl">Valid Reachable States</div>
+        </div>
+        <div class="ins-card c3">
+          <div class="ins-ico">🎯</div>
+          <div class="ins-num" id="cnt-optimal">0</div>
+          <div class="ins-lbl">Optimal Path Steps</div>
+        </div>
+      </div>
+
+      <div class="g-card reveal">
+        <h3 style="font-family:'Rajdhani',sans-serif;font-size:1.05rem;color:var(--text-hi);margin-bottom:26px;font-weight:700">
+          📊 States Explored Before Finding Solution
+        </h3>
+        <div class="cplx-bars">
+          <div class="cplx-row">
+            <div class="cplx-nm">BFS</div>
+            <div class="cplx-wrap"><div class="cplx-bar cbar-bfs" id="bar-bfs">11 states</div></div>
+          </div>
+          <div class="cplx-row">
+            <div class="cplx-nm">DFS</div>
+            <div class="cplx-wrap"><div class="cplx-bar cbar-dfs" id="bar-dfs">18 states</div></div>
+          </div>
+          <div class="cplx-row">
+            <div class="cplx-nm">A*</div>
+            <div class="cplx-wrap"><div class="cplx-bar cbar-astar" id="bar-astar">8 states</div></div>
+          </div>
+        </div>
+        <p style="margin-top:18px;font-family:'Fira Code',monospace;font-size:.67rem;color:var(--text-dim)">
+          BFS = shortest path guaranteed · DFS = may explore suboptimal branches · A* = heuristic-guided efficiency
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="glow-div"></div>
+
+  <!-- ══════════════════════════════
+       06 — LEARNING MODE
+  ══════════════════════════════ -->
+  <section id="learning">
+    <div class="sec-inner">
+
+      <div class="reveal">
+        <p class="sec-tag">06 — Learning Mode</p>
+        <h2 class="sec-title">Adaptive <span class="neon-p">Knowledge Engine</span></h2>
+        <p class="sec-sub">
+          Switch between Beginner (intuitive) and Advanced (formal CS) modes.
+          PURBA is ready to dive deeper on any topic — just ask!
+        </p>
+      </div>
+
+      <div class="learn-toggle reveal">
+        <button class="l-btn on" onclick="setLearnMode('beginner',this)">🌱 Beginner</button>
+        <button class="l-btn"    onclick="setLearnMode('advanced',this)">⚡ Advanced</button>
+      </div>
+
+      <div class="hints-grid reveal" id="hints-grid"></div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer>
+    <div style="margin-bottom:7px;font-size:.82rem;color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.08em">
+      FOX · GOOSE · BEANS — PURBA AI Edition
+    </div>
+    <div>Intelligent State-Space Explorer · BFS · DFS · A* · Java Implementation · PURBA Chatbot</div>
+  </footer>
+
+  <!-- ══════════════════════════════
+       PURBA AI CHATBOT
+  ══════════════════════════════ -->
+  <div class="purba-wrap">
+
+    <!-- Chat window -->
+    <div class="purba-chat" id="purba-chat">
+
+      <!-- Header -->
+      <div class="purba-hdr">
+        <div class="purba-avatar">🤖</div>
+        <div>
+          <div class="purba-name">PURBA · AI Assistant</div>
+          <div class="purba-status">Online — State Space Expert</div>
+        </div>
+        <button class="purba-close" onclick="closePurba()">✕</button>
+      </div>
+
+      <!-- Quick hint chips -->
+      <div class="purba-hints">
+        <button class="purba-hint-chip" onclick="sendHintChip('Explain BFS')">BFS</button>
+        <button class="purba-hint-chip" onclick="sendHintChip('Explain DFS')">DFS</button>
+        <button class="purba-hint-chip" onclick="sendHintChip('What is A*?')">A*</button>
+        <button class="purba-hint-chip" onclick="sendHintChip('Give me a hint for the puzzle')">💡 Hint</button>
+        <button class="purba-hint-chip" onclick="sendHintChip('What is the optimal solution?')">Solution</button>
+        <button class="purba-hint-chip" onclick="sendHintChip('Explain the Java code')">Java Code</button>
+      </div>
+
+      <!-- Messages -->
+      <div class="purba-msgs" id="purba-msgs">
+        <div class="purba-msg bot">
+          Hi! I'm <b>PURBA</b> 🤖 — your AI guide for the Fox, Goose &amp; Beans puzzle! I can explain BFS, DFS, A*, the Java code, puzzle rules, and strategy. What would you like to explore?
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="purba-input-row">
+        <input class="purba-input" id="purba-input" type="text" placeholder="Ask PURBA anything...">
+        <button class="purba-send" onclick="sendPurbaInput()">Send</button>
+      </div>
+
+    </div>
+
+    <!-- Floating bubble button -->
+    <div style="position:relative">
+      <div class="purba-badge" id="purba-badge">1</div>
+      <button class="purba-bubble" onclick="togglePurba()" title="Chat with PURBA">🤖</button>
+    </div>
+
+  </div>
+
+  <!-- Auto-generate line numbers from code content -->
+  <script>
+    function genLineNums(codeId, numsId) {
+      const pre  = document.getElementById(codeId);
+      const nums = document.getElementById(numsId);
+      if (!pre || !nums) return;
+      const lines = pre.innerText.split('\n').length;
+      nums.innerHTML = Array.from({ length: lines }, (_, i) => `<span>${i + 1}</span>`).join('');
+    }
+    window.addEventListener('load', () => {
+      genLineNums('bfs-code', 'bfs-line-nums');
+      genLineNums('dfs-code', 'dfs-line-nums');
+    });
+  </script>
+
+  <script src="fgb.js"></script>
+
+</body>
+</html>
